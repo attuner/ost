@@ -14,14 +14,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Online Sound Tracks" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%231e293b'/%3E%3Ctext x='96' y='122' fill='%2360a5fa' font-family='sans-serif' font-weight='900' font-size='66' text-anchor='middle'%3EOST%3C/text%3E%3C/svg%3E" />
-  
+
   <style>
     :root {
       --primary: #3b82f6;
       --primary-hover: #2563eb;
       --bg: #030712;
-      --cabinet: #1e1e24;
-      --speaker-rim: #2d2d38;
       --text: #f9fafb;
       --text-muted: #9ca3af;
       --border: rgba(255, 255, 255, 0.12);
@@ -51,127 +49,97 @@
       overscroll-behavior: none;
     }
 
+    /* FULL-SCREEN CANVAS STAGE */
     #stage {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: radial-gradient(circle at center, #181824 0%, #030712 100%);
-      padding: clamp(8px, 2vh, 20px);
-    }
-
-    #radio-chassis {
-      display: grid;
-      grid-template-columns: minmax(180px, 1fr) minmax(280px, 1.4fr) minmax(180px, 1fr);
-      gap: clamp(10px, 2vw, 22px);
-      width: 100%;
-      max-width: 1100px;
-      height: min(580px, 94vh);
-      background: linear-gradient(180deg, #2a2a35 0%, #15151c 100%);
-      border: 3px solid #3e3e4f;
-      border-radius: clamp(20px, 3vw, 36px);
-      box-shadow: 0 25px 65px rgba(0, 0, 0, 0.9), inset 0 2px 4px rgba(255, 255, 255, 0.15);
-      padding: clamp(12px, 2vh, 24px);
-      align-items: center;
-      position: relative;
-    }
-
-    @media (max-width: 840px) {
-      #radio-chassis {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto 1fr;
-        height: 98dvh;
-        overflow-y: auto;
-      }
-      #center-console {
-        grid-column: span 2;
-        order: -1;
-      }
-    }
-
-    /* PHYSICAL SPEAKER UNITS */
-    .speaker-unit {
-      background: radial-gradient(circle, #101015 40%, #08080c 100%);
-      border: 5px solid var(--speaker-rim);
-      border-radius: 24px;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 10px;
-      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.95);
-      position: relative;
-    }
-
-    .speaker-label {
-      font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      color: #94a3b8;
-      text-transform: uppercase;
-    }
-
-    .cone-housing {
-      position: relative;
-      width: clamp(130px, 16vw, 190px);
-      height: clamp(130px, 16vw, 190px);
-      border-radius: 50%;
-      background: radial-gradient(circle, #1e1e28 15%, #050508 85%);
-      box-shadow: 0 0 22px rgba(0, 0, 0, 0.8), inset 0 0 14px rgba(0, 0, 0, 0.9);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 3px solid #333342;
       overflow: hidden;
+      background: radial-gradient(circle at center, #111827 0%, #030712 100%);
     }
 
-    .speaker-canvas {
+    #visualizer-canvas {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      border-radius: 50%;
+      display: block;
+      z-index: 1;
     }
 
-    .dust-cap {
-      width: 32%;
-      height: 32%;
-      border-radius: 50%;
-      background: radial-gradient(circle, #3b82f6 0%, #172554 80%);
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
-      z-index: 2;
-      transition: transform 0.04s cubic-bezier(0, 0, 0.2, 1);
-    }
-
-    .telemetry-card {
-      width: 100%;
-      background: rgba(0, 0, 0, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      padding: 8px 12px;
+    /* FLOATING CENTRAL CONTROL POD */
+    #center-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(380px, 86vw);
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      align-items: center;
+      text-align: center;
+      z-index: 10;
+      pointer-events: auto;
+      gap: 12px;
+    }
+
+    .tuner-glass {
+      background: rgba(15, 23, 42, 0.78);
+      border: 1.5px solid rgba(59, 130, 246, 0.35);
+      border-radius: 20px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(59, 130, 246, 0.15);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      width: 100%;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      color: #93c5fd;
+      font-weight: 800;
+      background: rgba(59, 130, 246, 0.18);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    #station-title {
+      font-size: clamp(1.1rem, 2.5vw, 1.45rem);
+      font-weight: 700;
+      margin: 4px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #60a5fa;
+    }
+
+    #station-meta {
+      font-size: clamp(0.72rem, 1.2vw, 0.82rem);
+      color: var(--text-muted);
     }
 
     .telemetry-row {
       display: flex;
       justify-content: space-between;
-      font-family: monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.72rem;
       color: #cbd5e1;
+      margin-top: 8px;
     }
 
     .db-meter-track {
       width: 100%;
-      height: 6px;
+      height: 4px;
       background: #1e293b;
-      border-radius: 3px;
+      border-radius: 2px;
       overflow: hidden;
+      margin-top: 4px;
     }
 
     .db-meter-fill {
@@ -181,65 +149,16 @@
       transition: width 0.08s ease-out;
     }
 
-    /* CENTER CONSOLE & TUNER PANEL */
-    #center-console {
-      background: rgba(10, 10, 16, 0.85);
-      border: 2px solid #2f2f3f;
-      border-radius: 20px;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: clamp(16px, 2.4vh, 26px);
-      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
-      text-align: center;
-      gap: 16px;
-    }
-
-    .tuner-glass {
-      background: #000;
-      border: 2px solid #2563eb40;
-      border-radius: 14px;
-      padding: 16px 14px;
-      box-shadow: inset 0 0 15px rgba(37, 99, 235, 0.2);
-    }
-
-    #station-title {
-      font-size: clamp(1.2rem, 2.4vw, 1.65rem);
-      font-weight: 700;
-      margin: 6px 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: #60a5fa;
-    }
-
-    #station-meta {
-      font-size: clamp(0.74rem, 1.2vw, 0.84rem);
-      color: var(--text-muted);
-    }
-
-    .badge {
-      display: inline-block;
-      font-size: 0.68rem;
-      letter-spacing: 0.08em;
-      color: #93c5fd;
-      font-weight: 700;
-      background: rgba(59, 130, 246, 0.15);
-      padding: 2px 8px;
-      border-radius: 999px;
-      margin-bottom: 2px;
-    }
-
+    /* CONTROL ACTIONS */
     .control-actions {
       display: flex;
-      flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+      width: 100%;
     }
 
     .btn {
-      padding: 12px 14px;
-      border-radius: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
       border: none;
       font-weight: 600;
       cursor: pointer;
@@ -247,18 +166,26 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      font-size: 0.85rem;
-      transition: background 0.15s;
+      font-size: 0.82rem;
+      transition: background 0.15s, transform 0.05s;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
     }
 
     .btn:focus, .btn:focus-visible {
-      outline: 3px solid var(--focus-ring);
+      outline: 2px solid var(--focus-ring);
     }
 
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: var(--primary-hover); }
-    .btn-secondary { background: #2f2f3f; color: #fff; }
-    .btn-secondary:hover { background: #3f3f55; }
+    .btn-secondary {
+      background: rgba(30, 41, 59, 0.8);
+      color: #f1f5f9;
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: rgba(51, 65, 85, 0.9); }
     .btn-cancel { background: #475569; color: #fff; }
 
     /* TIMETABLE DRAWER WITH TV SCROLL CONTROLS */
@@ -270,9 +197,9 @@
       width: min(480px, 100vw);
       height: 100%;
       height: 100dvh;
-      background: #111827;
+      background: #0f172a;
       border-left: 1px solid var(--border);
-      box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
       z-index: 100;
       display: flex;
       flex-direction: column;
@@ -288,7 +215,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 8px;
-      background: #151d2f;
+      background: #1e293b;
     }
 
     .tv-scroll-controls {
@@ -298,8 +225,8 @@
     }
 
     .tv-scroll-btn {
-      background: #1f2937;
-      color: #f3f4f6;
+      background: #334155;
+      color: #f8fafc;
       border: 1px solid var(--border);
       padding: 8px 12px;
       border-radius: 8px;
@@ -310,7 +237,7 @@
 
     .tv-scroll-btn:focus, .tv-scroll-btn:focus-visible, .tv-scroll-btn:hover {
       outline: 2px solid var(--focus-ring);
-      background: #374151;
+      background: #475569;
     }
 
     .remote-content {
@@ -332,9 +259,9 @@
     }
 
     .station-item {
-      background: #1f2937;
+      background: #1e293b;
       padding: 10px 12px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid transparent;
       display: flex;
       justify-content: space-between;
@@ -344,8 +271,8 @@
     }
 
     .station-item:focus, .station-item:focus-visible {
-      outline: 3px solid var(--focus-ring);
-      background: #2d3748;
+      outline: 2px solid var(--focus-ring);
+      background: #334155;
     }
 
     .station-item.active {
@@ -371,7 +298,7 @@
     }
 
     .modal-box {
-      background: #181824;
+      background: #0f172a;
       border: 1px solid var(--border);
       border-radius: 18px;
       width: min(440px, 95vw);
@@ -391,7 +318,7 @@
 
     .input-group label { font-size: 0.72rem; color: var(--text-muted); }
     .input-group input, .input-group select {
-      background: #1f2937;
+      background: #1e293b;
       border: 1px solid var(--border);
       color: #fff;
       padding: 8px 10px;
@@ -414,66 +341,29 @@
 </head>
 <body>
 
+  <!-- STAGE WITH FULL-SCREEN CANVAS & FLOATING CENTER INTERFACE -->
   <div id="stage">
-    <div id="radio-chassis">
-      
-      <!-- LEFT SPEAKER -->
-      <div class="speaker-unit" id="speaker-left">
-        <span class="speaker-label">◀ LEFT CHANNEL</span>
-        
-        <div class="cone-housing">
-          <canvas class="speaker-canvas" id="canvas-left"></canvas>
-          <div class="dust-cap" id="cap-left"></div>
-        </div>
+    <canvas id="visualizer-canvas"></canvas>
 
-        <div class="telemetry-card">
-          <div class="telemetry-row">
-            <span>LEVEL:</span>
-            <span id="left-db-txt">-∞ dB</span>
-          </div>
-          <div class="db-meter-track">
-            <div class="db-meter-fill" id="left-db-fill"></div>
-          </div>
+    <div id="center-overlay">
+      <div class="tuner-glass">
+        <span class="badge" id="stream-status">AUTOPILOT SCHEDULER</span>
+        <h2 id="station-title">Online Sound Tracks</h2>
+        <p id="station-meta">Synchronizing schedule...</p>
+        <div class="telemetry-row">
+          <span>LEVEL:</span>
+          <span id="level-db-txt">-∞ dB</span>
+        </div>
+        <div class="db-meter-track">
+          <div class="db-meter-fill" id="level-db-fill"></div>
         </div>
       </div>
 
-      <!-- CENTER TUNER -->
-      <div id="center-console">
-        <div class="tuner-glass">
-          <span class="badge" id="stream-status">AUTOPILOT SCHEDULER</span>
-          <h2 id="station-title">Online Sound Tracks</h2>
-          <p id="station-meta">Synchronizing schedule...</p>
-        </div>
-
-        <div class="control-actions">
-          <button class="btn btn-primary" onclick="openAddPopup()">+ Add Station</button>
-          <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary" style="flex:1;" onclick="toggleRemote()">Timetable</button>
-            <button class="btn btn-secondary" style="flex:1;" onclick="syncWithGoogleSheet()">Sync Sheet</button>
-          </div>
-        </div>
+      <div class="control-actions">
+        <button class="btn btn-primary" style="flex:1;" onclick="openAddPopup()">+ Add Station</button>
+        <button class="btn btn-secondary" onclick="toggleRemote()">Timetable</button>
+        <button class="btn btn-secondary" onclick="syncWithGoogleSheet()">Sync Sheet</button>
       </div>
-
-      <!-- RIGHT SPEAKER -->
-      <div class="speaker-unit" id="speaker-right">
-        <span class="speaker-label">RIGHT CHANNEL ▶</span>
-        
-        <div class="cone-housing">
-          <canvas class="speaker-canvas" id="canvas-right"></canvas>
-          <div class="dust-cap" id="cap-right"></div>
-        </div>
-
-        <div class="telemetry-card">
-          <div class="telemetry-row">
-            <span>LEVEL:</span>
-            <span id="right-db-txt">-∞ dB</span>
-          </div>
-          <div class="db-meter-track">
-            <div class="db-meter-fill" id="right-db-fill"></div>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 
@@ -544,8 +434,7 @@
     </div>
   </div>
 
-  <!-- UNRESTRICTED AUDIO ELEMENT (Zero CORS blocks, zero silent dropouts) -->
-  <audio id="radio-core" preload="auto" playsinline></audio>
+  <audio id="radio-core" crossorigin="anonymous" preload="auto" playsinline></audio>
 
   <div id="start-overlay">
     <button class="btn btn-primary" style="padding: 16px 32px; font-size: 1.05rem;" id="init-btn">
@@ -625,27 +514,25 @@
     let hlsInstance = null;
     let isPlaying = false;
 
-    // AudioWorklet Telemetry State
-    let workletDataL = { rmsDb: -60, bins: new Float32Array(32) };
-    let workletDataR = { rmsDb: -60, bins: new Float32Array(32) };
+    // Web Audio API State
+    let audioCtx = null;
+    let audioSource = null;
+    let analyserNode = null;
+    let freqDataArray = null;
+    let hasWebAudio = false;
 
     const audio = document.getElementById("radio-core");
     const stationTitleEl = document.getElementById("station-title");
     const stationMetaEl = document.getElementById("station-meta");
     const streamStatusEl = document.getElementById("stream-status");
+    const levelDbTxt = document.getElementById("level-db-txt");
+    const levelDbFill = document.getElementById("level-db-fill");
     const remoteDrawer = document.getElementById("remote-drawer");
     const remoteList = document.getElementById("remote-station-list");
     const popupOverlay = document.getElementById("edit-popup-overlay");
     const scrollContainer = document.getElementById("timetable-scroll-area");
-
-    const cvsL = document.getElementById("canvas-left");
-    const cvsR = document.getElementById("canvas-right");
-    const capL = document.getElementById("cap-left");
-    const capR = document.getElementById("cap-right");
-    const txtDbL = document.getElementById("left-db-txt");
-    const txtDbR = document.getElementById("right-db-txt");
-    const fillDbL = document.getElementById("left-db-fill");
-    const fillDbR = document.getElementById("right-db-fill");
+    const canvas = document.getElementById("visualizer-canvas");
+    const ctx = canvas.getContext("2d");
 
     function initializeScheduleData() {
       const cached = localStorage.getItem(STORAGE_KEY);
@@ -672,136 +559,117 @@
       }
     }
 
-    // AUDIOWORKLET ENGINE: Isolated background DSP analysis
-    const WORKLET_PROCESSOR_CODE = `
-      class VisualizerProcessor extends AudioWorkletProcessor {
-        constructor() {
-          super();
-          this.clock = 0;
-          this.numBins = 32;
-        }
+    // CANVAS SIZING FOR RETINA / HIGH-DPI & FULL SCREEN
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("orientationchange", () => setTimeout(resizeCanvas, 200));
 
-        process(inputs, outputs) {
-          this.clock += 0.05;
-          const leftBins = new Float32Array(this.numBins);
-          const rightBins = new Float32Array(this.numBins);
-
-          let sumL = 0;
-          let sumR = 0;
-
-          // Compute FFT spectrum buckets
-          for (let i = 0; i < this.numBins; i++) {
-            const harmonicL = Math.sin(this.clock * 2.8 + i * 0.35) * 0.5 + 0.5;
-            const harmonicR = Math.sin(this.clock * 2.8 + i * 0.35 + 0.6) * 0.5 + 0.5;
-            leftBins[i] = harmonicL * 0.95;
-            rightBins[i] = harmonicR * 0.95;
-            sumL += harmonicL;
-            sumR += harmonicR;
-          }
-
-          const avgL = sumL / this.numBins;
-          const avgR = sumR / this.numBins;
-          const rmsDbL = Math.round(-24 + avgL * 18);
-          const rmsDbR = Math.round(-24 + avgR * 18);
-
-          this.port.postMessage({
-            left: { rmsDb: rmsDbL, bins: leftBins },
-            right: { rmsDb: rmsDbR, bins: rightBins }
-          });
-
-          return true;
-        }
-      }
-      registerProcessor('visualizer-processor', VisualizerProcessor);
-    `;
-
-    async function initAudioWorklet() {
+    // WEB AUDIO API ANALYSER INITIALIZATION
+    function setupWebAudio() {
+      if (hasWebAudio) return;
       try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const audioCtx = new AudioCtx();
-        const blob = new Blob([WORKLET_PROCESSOR_CODE], { type: "application/javascript" });
-        const workletUrl = URL.createObjectURL(blob);
-        await audioCtx.audioWorklet.addModule(workletUrl);
-        const workletNode = new AudioWorkletNode(audioCtx, "visualizer-processor");
+        const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioCtxClass();
 
-        workletNode.port.onmessage = (e) => {
-          if (e.data && isPlaying) {
-            workletDataL = e.data.left;
-            workletDataR = e.data.right;
-          }
-        };
-      } catch (err) {
-        console.warn("AudioWorklet running in visualizer thread:", err);
+        audioSource = audioCtx.createMediaElementSource(audio);
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 128;
+        analyserNode.smoothingTimeConstant = 0.82;
+
+        freqDataArray = new Uint8Array(analyserNode.frequencyBinCount);
+
+        audioSource.connect(analyserNode);
+        analyserNode.connect(audioCtx.destination);
+
+        hasWebAudio = true;
+      } catch (e) {
+        console.warn("Web Audio Analyser init deferred / restricted:", e);
       }
     }
 
-    function fitCanvases() {
-      if (!cvsL || !cvsR) return;
-      const wL = Math.max(80, cvsL.parentElement.clientWidth);
-      const hL = Math.max(80, cvsL.parentElement.clientHeight);
-      cvsL.width = wL;
-      cvsL.height = hL;
-      cvsR.width = wL;
-      cvsR.height = hL;
-    }
-    window.addEventListener("resize", fitCanvases);
+    // CIRCULAR / RADIAL FREQUENCY SPECTRUM VISUALIZER
+    function startRadialVisualizerLoop() {
+      resizeCanvas();
 
-    // TRUE VISUALIZER RENDERING LOOP (Reads directly from AudioWorklet state)
-    function startVisualizerLoop() {
-      fitCanvases();
+      function renderFrame() {
+        requestAnimationFrame(renderFrame);
 
-      function renderSpeaker(canvas, telemetry, capEl, txtDb, fillDb, color) {
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        ctx.clearRect(0, 0, width, height);
 
-        if (!isPlaying || !telemetry) {
-          txtDb.innerText = "-∞ dB";
-          fillDb.style.width = "0%";
-          capEl.style.transform = "scale(1)";
-          return;
+        const cx = width / 2;
+        const cy = height / 2;
+        const innerRadius = Math.min(cx, cy) * 0.42;
+
+        let rms = 0;
+        let binsCount = 64;
+        let data = freqDataArray;
+
+        if (hasWebAudio && analyserNode && isPlaying) {
+          analyserNode.getByteFrequencyData(freqDataArray);
+          binsCount = analyserNode.frequencyBinCount;
+          data = freqDataArray;
+
+          let sum = 0;
+          for (let i = 0; i < binsCount; i++) {
+            sum += data[i] * data[i];
+          }
+          rms = Math.sqrt(sum / binsCount);
+        } else if (isPlaying) {
+          // Fallback data if stream is strictly cross-origin restricted
+          rms = 48 + Math.random() * 24;
+          data = new Uint8Array(binsCount);
+          for (let i = 0; i < binsCount; i++) {
+            data[i] = Math.round(50 + Math.sin(i * 0.2 + Date.now() * 0.005) * 45);
+          }
         }
 
-        const db = telemetry.rmsDb;
-        txtDb.innerText = `${db} dB`;
-        fillDb.style.width = `${Math.min(100, Math.max(0, (db + 60) * 1.66))}%`;
+        // Telemetry calculation
+        const db = isPlaying && rms > 0 ? Math.max(-60, Math.round(20 * Math.log10(rms / 255))) : -60;
+        levelDbTxt.innerText = db > -60 ? `${db} dB` : "-∞ dB";
+        levelDbFill.style.width = `${Math.min(100, Math.max(0, (db + 60) * 1.66))}%`;
 
-        // Direct cone physical excursion
-        const linearAmp = Math.pow(10, Math.max(-60, db) / 20);
-        const excursion = 1 + linearAmp * 0.28;
-        capEl.style.transform = `scale(${excursion})`;
+        // Render Radial 360-degree Equalizer Bars
+        const maxOutwardLength = Math.min(cx, cy) * 0.45;
 
-        // Real AudioWorklet frequency spectrum
-        const cx = canvas.width / 2;
-        const cy = canvas.height / 2;
-        const radius = (canvas.width / 2) * 0.72;
-        const bins = telemetry.bins || new Float32Array(32);
-        const barsCount = bins.length;
+        for (let i = 0; i < binsCount; i++) {
+          const amplitude = isPlaying ? data[i] / 255 : 0;
+          const angle = ((Math.PI * 2) / binsCount) * i - Math.PI / 2;
+          const barLength = amplitude * maxOutwardLength;
 
-        for (let i = 0; i < barsCount; i++) {
-          const val = bins[i];
-          const rad = (Math.PI * 2 / barsCount) * i;
-          const barLen = val * (radius * 0.44);
+          const xStart = cx + Math.cos(angle) * innerRadius;
+          const yStart = cy + Math.sin(angle) * innerRadius;
+          const xEnd = cx + Math.cos(angle) * (innerRadius + barLength);
+          const yEnd = cy + Math.sin(angle) * (innerRadius + barLength);
 
-          const x1 = cx + Math.cos(rad) * radius;
-          const y1 = cy + Math.sin(rad) * radius;
-          const x2 = cx + Math.cos(rad) * (radius + barLen);
-          const y2 = cy + Math.sin(rad) * (radius + barLen);
+          const opacity = isPlaying ? Math.max(0.18, amplitude * 0.95) : 0.08;
 
-          ctx.strokeStyle = color;
-          ctx.lineWidth = 2.4;
+          ctx.strokeStyle = `rgba(59, 130, 246, ${opacity})`;
+          ctx.lineWidth = Math.max(2, (2 * Math.PI * innerRadius) / (binsCount * 1.8));
+          ctx.lineCap = "round";
+
           ctx.beginPath();
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
+          ctx.moveTo(xStart, yStart);
+          ctx.lineTo(xEnd, yEnd);
           ctx.stroke();
         }
+
+        // Concentric Decorative Ring
+        ctx.beginPath();
+        ctx.arc(cx, cy, innerRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = isPlaying ? "rgba(59, 130, 246, 0.4)" : "rgba(255, 255, 255, 0.08)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
       }
 
-      function loop() {
-        requestAnimationFrame(loop);
-        renderSpeaker(cvsL, workletDataL, capL, txtDbL, fillDbL, "#38bdf8");
-        renderSpeaker(cvsR, workletDataR, capR, txtDbR, fillDbR, "#818cf8");
-      }
-      loop();
+      renderFrame();
     }
 
     function toMinutes(t) {
@@ -823,7 +691,6 @@
       }) || schedule[0];
     }
 
-    // Playback system for TV browsers, Safari, iPad, and Mobile
     function playStream(station, isManual = false) {
       if (!station) return;
       activeChannel = station;
@@ -837,7 +704,6 @@
         hlsInstance.destroy();
         hlsInstance = null;
       }
-
       audio.pause();
       audio.removeAttribute("src");
       audio.load();
@@ -847,27 +713,19 @@
         streamUrl = streamUrl.replace("http://", "https://");
       }
 
-      // 1. Native HLS for Safari (iOS / iPad / Mac)
       if (streamUrl.includes(".m3u8") && audio.canPlayType("application/vnd.apple.mpegurl")) {
         audio.src = streamUrl;
-        const p = audio.play();
-        if (p) p.catch(e => console.warn("Native HLS play pending:", e));
-      } 
-      // 2. HLS.js for Android, Smart TV browsers, Chrome, and Firefox
-      else if (streamUrl.includes(".m3u8") && Hls.isSupported()) {
+        audio.play().catch(e => console.warn("Native HLS play pending gesture:", e));
+      } else if (streamUrl.includes(".m3u8") && Hls.isSupported()) {
         hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
         hlsInstance.loadSource(streamUrl);
         hlsInstance.attachMedia(audio);
         hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-          const p = audio.play();
-          if (p) p.catch(e => console.warn("HLS play pending:", e));
+          audio.play().catch(e => console.warn("HLS play pending gesture:", e));
         });
-      } 
-      // 3. Direct Native Lossless Decoding (Zero CORS blocking)
-      else {
+      } else {
         audio.src = streamUrl;
-        const p = audio.play();
-        if (p) p.catch(e => console.warn("Native stream play pending:", e));
+        audio.play().catch(e => console.warn("Native stream play pending gesture:", e));
       }
 
       renderRemoteList();
@@ -875,17 +733,12 @@
 
     audio.addEventListener("playing", () => {
       isPlaying = true;
+      if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
       streamStatusEl.innerText = manualOverride ? "MANUAL OVERRIDE (PLAYING)" : "AUTOPILOT (PLAYING)";
     });
 
-    audio.addEventListener("pause", () => {
-      isPlaying = false;
-    });
-
-    audio.addEventListener("waiting", () => {
-      streamStatusEl.innerText = "BUFFERING STREAM...";
-    });
-
+    audio.addEventListener("pause", () => { isPlaying = false; });
+    audio.addEventListener("waiting", () => { streamStatusEl.innerText = "BUFFERING STREAM..."; });
     audio.addEventListener("error", (e) => {
       console.warn("Direct stream error:", e);
       isPlaying = false;
@@ -1025,7 +878,6 @@
       }
     }
 
-    // Touch, Click, or TV Remote OK Key handler
     function initializePlaybackSystem() {
       document.getElementById("start-overlay").style.display = "none";
 
@@ -1036,8 +888,13 @@
       } catch (e) {}
 
       initializeScheduleData();
-      initAudioWorklet();
-      startVisualizerLoop();
+      setupWebAudio();
+
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+
+      startRadialVisualizerLoop();
       renderRemoteList();
       evaluateSchedule();
 
