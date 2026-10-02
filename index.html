@@ -144,7 +144,7 @@
       background: radial-gradient(circle, #3b82f6 0%, #172554 80%);
       box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
       z-index: 2;
-      transition: transform 0.05s ease-out;
+      transition: transform 0.04s cubic-bezier(0, 0, 0.2, 1);
     }
 
     .telemetry-card {
@@ -544,8 +544,8 @@
     </div>
   </div>
 
-  <!-- NATIVE STEREO AUDIO ELEMENT (NO CORS RESTRICTION TO PREVENT MUTING) -->
-  <audio id="radio-core" preload="auto" playsinline></audio>
+  <!-- NATIVE AUDIO ELEMENT WITH CORS ENABLED FOR AUDIOWORKLET -->
+  <audio id="radio-core" crossorigin="anonymous" preload="auto" playsinline></audio>
 
   <div id="start-overlay">
     <button class="btn btn-primary" style="padding: 16px 32px; font-size: 1.05rem;" id="init-btn">
@@ -625,6 +625,14 @@
     let hlsInstance = null;
     let isPlaying = false;
 
+    // AudioWorklet Infrastructure
+    let audioCtx = null;
+    let audioSource = null;
+    let workletNode = null;
+    let workletDataL = { rmsDb: -60, bins: new Float32Array(32) };
+    let workletDataR = { rmsDb: -60, bins: new Float32Array(32) };
+    let hasAudioWorklet = false;
+
     const audio = document.getElementById("radio-core");
     const stationTitleEl = document.getElementById("station-title");
     const stationMetaEl = document.getElementById("station-meta");
@@ -668,6 +676,119 @@
       }
     }
 
+    // AUDIOWORKLET PROCESSOR CODE (Executed in a dedicated background audio thread)
+    const WORKLET_PROCESSOR_CODE = `
+      class TrueVisualizerProcessor extends AudioWorkletProcessor {
+        constructor() {
+          super();
+          this.frameCount = 0;
+          this.numBins = 32;
+        }
+
+        computeChannelTelemetry(channelData) {
+          if (!channelData || channelData.length === 0) {
+            return { rmsDb: -60, bins: new Float32Array(this.numBins) };
+          }
+
+          let sumSquares = 0;
+          for (let i = 0; i < channelData.length; i++) {
+            const sample = channelData[i];
+            sumSquares += sample * sample;
+          }
+
+          const rms = Math.sqrt(sumSquares / channelData.length);
+          const rmsDb = rms > 0 ? Math.max(-60, Math.round(20 * Math.log10(rms))) : -60;
+
+          // Discrete Fourier Transform bin energy analysis across frequency spectrum
+          const bins = new Float32Array(this.numBins);
+          const N = channelData.length;
+
+          for (let k = 0; k < this.numBins; k++) {
+            let real = 0;
+            let imag = 0;
+            const omega = (2 * Math.PI * (k + 1)) / N;
+
+            for (let n = 0; n < N; n++) {
+              const val = channelData[n];
+              real += val * Math.cos(omega * n);
+              imag -= val * Math.sin(omega * n);
+            }
+            // Normalized magnitude response
+            bins[k] = Math.min(1.0, Math.sqrt(real * real + imag * imag) * 0.4);
+          }
+
+          return { rmsDb, bins };
+        }
+
+        process(inputs, outputs) {
+          const input = inputs[0];
+          const output = outputs[0];
+
+          // Bit-for-bit lossless output audio pass-through
+          if (input && output) {
+            for (let ch = 0; ch < input.length; ch++) {
+              output[ch].set(input[ch]);
+            }
+          }
+
+          // Transmit telemetry to main thread at ~60Hz (every 8 worklet chunks)
+          this.frameCount++;
+          if (this.frameCount >= 8 && input && input.length > 0) {
+            this.frameCount = 0;
+            const leftData = this.computeChannelTelemetry(input[0]);
+            const rightData = this.computeChannelTelemetry(input.length > 1 ? input[1] : input[0]);
+
+            this.port.postMessage({
+              left: leftData,
+              right: rightData
+            });
+          }
+
+          return true;
+        }
+      }
+
+      registerProcessor('true-visualizer-processor', TrueVisualizerProcessor);
+    `;
+
+    // AUDIOWORKLET ENGINE INITIALIZATION
+    async function setupAudioWorkletPipeline() {
+      if (hasAudioWorklet) return;
+
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioCtx();
+
+        // Register processor from an inline Blob URL (avoids external network file fetches)
+        const blob = new Blob([WORKLET_PROCESSOR_CODE], { type: "application/javascript" });
+        const workletUrl = URL.createObjectURL(blob);
+        await audioCtx.audioWorklet.addModule(workletUrl);
+
+        audioSource = audioCtx.createMediaElementSource(audio);
+        workletNode = new AudioWorkletNode(audioCtx, "true-visualizer-processor", {
+          numberOfInputs: 1,
+          numberOfOutputs: 1,
+          outputChannelCount: [2]
+        });
+
+        // Listen for true FFT and RMS data sent from the background audio thread
+        workletNode.port.onmessage = (event) => {
+          if (event.data) {
+            workletDataL = event.data.left;
+            workletDataR = event.data.right;
+          }
+        };
+
+        // Graph: audioSource -> workletNode -> destination (Clean, lossless)
+        audioSource.connect(workletNode);
+        workletNode.connect(audioCtx.destination);
+
+        hasAudioWorklet = true;
+      } catch (err) {
+        console.warn("AudioWorklet initialization fallback:", err);
+      }
+    }
+
     function fitCanvases() {
       if (!cvsL || !cvsR) return;
       const wL = Math.max(80, cvsL.parentElement.clientWidth);
@@ -679,41 +800,41 @@
     }
     window.addEventListener("resize", fitCanvases);
 
-    // Cross-Device Audio Activity Visualizer
+    // TRUE VISUALIZER RENDERING LOOP (Reads directly from AudioWorklet state)
     function startVisualizerLoop() {
       fitCanvases();
-      let phase = 0;
 
-      function renderSpeaker(canvas, capEl, txtDb, fillDb, color, panOffset) {
+      function renderSpeaker(canvas, telemetry, capEl, txtDb, fillDb, color) {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        if (!isPlaying) {
+        if (!isPlaying || !telemetry) {
           txtDb.innerText = "-∞ dB";
           fillDb.style.width = "0%";
           capEl.style.transform = "scale(1)";
           return;
         }
 
-        // Real-time excursion and signal wave synced to playback state
-        const dynamicEnergy = 0.58 + Math.sin(phase * 2.2 + panOffset) * 0.24 + Math.cos(phase * 3.8) * 0.14;
-        const db = Math.round(-18 + dynamicEnergy * 15);
-
-        txtDb.innerText = `${db} dB`;
+        const db = telemetry.rmsDb;
+        txtDb.innerText = db > -60 ? `${db} dB` : "-∞ dB";
         fillDb.style.width = `${Math.min(100, Math.max(0, (db + 60) * 1.66))}%`;
 
-        const excursion = 1 + dynamicEnergy * 0.22;
+        // Physical speaker excursion reacting to real acoustic RMS energy
+        const linearAmp = Math.pow(10, Math.max(-60, db) / 20);
+        const excursion = 1 + linearAmp * 0.35;
         capEl.style.transform = `scale(${excursion})`;
 
+        // Plot real frequency bins from AudioWorklet background thread
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
         const radius = (canvas.width / 2) * 0.72;
-        const barsCount = 36;
+        const bins = telemetry.bins || new Float32Array(32);
+        const barsCount = bins.length;
 
         for (let i = 0; i < barsCount; i++) {
+          const val = bins[i];
           const rad = (Math.PI * 2 / barsCount) * i;
-          const harmonic = Math.abs(Math.sin(phase * 2.6 + i * 0.38 + panOffset));
-          const barLen = harmonic * (radius * 0.44) * dynamicEnergy;
+          const barLen = val * (radius * 0.44);
 
           const x1 = cx + Math.cos(rad) * radius;
           const y1 = cy + Math.sin(rad) * radius;
@@ -731,9 +852,8 @@
 
       function loop() {
         requestAnimationFrame(loop);
-        phase += 0.045;
-        renderSpeaker(cvsL, capL, txtDbL, fillDbL, "#38bdf8", 0);
-        renderSpeaker(cvsR, capR, txtDbR, fillDbR, "#818cf8", 0.5);
+        renderSpeaker(cvsL, workletDataL, capL, txtDbL, fillDbL, "#38bdf8");
+        renderSpeaker(cvsR, workletDataR, capR, txtDbR, fillDbR, "#818cf8");
       }
       loop();
     }
@@ -757,7 +877,6 @@
       }) || schedule[0];
     }
 
-    // Direct, Lossless Cross-Device Audio Stream Dispatcher
     function playStream(station, isManual = false) {
       if (!station) return;
       activeChannel = station;
@@ -773,40 +892,34 @@
       }
       audio.pause();
       audio.removeAttribute("src");
-      audio.load();
 
-      let streamUrl = station.url.trim();
-      if (location.protocol === "https:" && streamUrl.startsWith("http://")) {
-        streamUrl = streamUrl.replace("http://", "https://");
+      let playUrl = station.url.trim();
+      if (location.protocol === "https:" && playUrl.startsWith("http://")) {
+        playUrl = playUrl.replace("http://", "https://");
       }
 
-      // 1. Native HLS for Safari (iOS / iPad / Mac)
-      if (streamUrl.includes(".m3u8") && audio.canPlayType("application/vnd.apple.mpegurl")) {
-        audio.src = streamUrl;
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(e => console.warn("Native HLS play pending gesture:", e));
-        }
-      } 
-      // 2. HLS.js for Android, Smart TVs, and Chrome/Firefox
-      else if (streamUrl.includes(".m3u8") && Hls.isSupported()) {
+      // Route through CORS gateway to enable AudioWorklet buffer access
+      const streamUrl = (!playUrl.includes(".m3u8") && !playUrl.includes("corsproxy.io"))
+        ? `https://corsproxy.io/?${encodeURIComponent(playUrl)}`
+        : playUrl;
+
+      if (station.url.includes(".m3u8") && Hls.isSupported()) {
         hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
-        hlsInstance.loadSource(streamUrl);
+        hlsInstance.loadSource(station.url);
         hlsInstance.attachMedia(audio);
         hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-          const playPromise = audio.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(e => console.warn("HLS play pending gesture:", e));
-          }
+          if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+          audio.play().catch(e => console.warn("HLS play deferred:", e));
         });
-      } 
-      // 3. Direct Native MP3/AAC Decoding
-      else {
+      } else {
         audio.src = streamUrl;
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(e => console.warn("Native stream play pending gesture:", e));
-        }
+        if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+        audio.play().catch(e => {
+          console.warn("Proxy play retry direct fallback:", e);
+          audio.removeAttribute("crossorigin");
+          audio.src = station.url;
+          audio.play().catch(err => console.warn("Native fallback play failed:", err));
+        });
       }
 
       renderRemoteList();
@@ -814,11 +927,11 @@
 
     audio.addEventListener("playing", () => {
       isPlaying = true;
+      if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
       streamStatusEl.innerText = manualOverride ? "MANUAL OVERRIDE (PLAYING)" : "AUTOPILOT (PLAYING)";
     });
 
     audio.addEventListener("pause", () => { isPlaying = false; });
-    audio.addEventListener("waiting", () => { streamStatusEl.innerText = "BUFFERING STREAM..."; });
     audio.addEventListener("error", (e) => {
       console.warn("Direct stream error:", e);
       isPlaying = false;
@@ -969,6 +1082,12 @@
       } catch (e) {}
 
       initializeScheduleData();
+      setupAudioWorkletPipeline();
+
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+
       startVisualizerLoop();
       renderRemoteList();
       evaluateSchedule();
