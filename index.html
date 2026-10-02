@@ -61,49 +61,151 @@
       align-items: center;
       background: radial-gradient(circle at center, #181824 0%, #030712 100%);
       padding: clamp(8px, 2vh, 20px);
-      overflow: hidden;
     }
 
     #radio-chassis {
-      display: flex;
-      flex-direction: column;
-      gap: clamp(10px, 1.8vh, 18px);
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(280px, 1.4fr) minmax(180px, 1fr);
+      gap: clamp(10px, 2vw, 22px);
       width: 100%;
-      max-width: 1300px;
-      max-height: 96dvh;
+      max-width: 1100px;
+      height: min(580px, 94vh);
       background: linear-gradient(180deg, #2a2a35 0%, #15151c 100%);
       border: 3px solid #3e3e4f;
-      border-radius: clamp(16px, 3vw, 32px);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), inset 0 2px 4px rgba(255, 255, 255, 0.15);
-      padding: clamp(10px, 2vh, 20px);
+      border-radius: clamp(20px, 3vw, 36px);
+      box-shadow: 0 25px 65px rgba(0, 0, 0, 0.9), inset 0 2px 4px rgba(255, 255, 255, 0.15);
+      padding: clamp(12px, 2vh, 24px);
+      align-items: center;
       position: relative;
-      overflow-y: auto;
+    }
+
+    @media (max-width: 840px) {
+      #radio-chassis {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto 1fr;
+        height: 98dvh;
+        overflow-y: auto;
+      }
+      #center-console {
+        grid-column: span 2;
+        order: -1;
+      }
+    }
+
+    /* EXACTLY 2 PHYSICAL SPEAKER CABINETS */
+    .speaker-unit {
+      background: radial-gradient(circle, #101015 40%, #08080c 100%);
+      border: 5px solid var(--speaker-rim);
+      border-radius: 24px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 10px;
+      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.95);
+      position: relative;
+    }
+
+    .speaker-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .cone-housing {
+      position: relative;
+      width: clamp(130px, 16vw, 190px);
+      height: clamp(130px, 16vw, 190px);
+      border-radius: 50%;
+      background: radial-gradient(circle, #1e1e28 15%, #050508 85%);
+      box-shadow: 0 0 22px rgba(0, 0, 0, 0.8), inset 0 0 14px rgba(0, 0, 0, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 3px solid #333342;
+    }
+
+    .speaker-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+
+    .dust-cap {
+      width: 32%;
+      height: 32%;
+      border-radius: 50%;
+      background: radial-gradient(circle, #3b82f6 0%, #172554 80%);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+      z-index: 2;
+      transition: transform 0.05s ease-out;
+    }
+
+    /* TELEMETRY WITHOUT ANY FREQUENCY DISPLAY */
+    .telemetry-card {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .telemetry-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: monospace;
+      font-size: 0.72rem;
+      color: #cbd5e1;
+    }
+
+    .db-meter-track {
+      width: 100%;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .db-meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981 0%, #f59e0b 70%, #ef4444 100%);
+      transition: width 0.08s ease-out;
     }
 
     /* CENTER CONSOLE & TUNER PANEL */
     #center-console {
       background: rgba(10, 10, 16, 0.85);
       border: 2px solid #2f2f3f;
-      border-radius: 18px;
+      border-radius: 20px;
+      height: 100%;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: clamp(10px, 1.6vh, 16px);
+      padding: clamp(12px, 1.8vh, 18px);
       box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
       text-align: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .tuner-glass {
       background: #000;
       border: 2px solid #2563eb40;
       border-radius: 12px;
-      padding: 10px 14px;
+      padding: 10px 12px;
       box-shadow: inset 0 0 15px rgba(37, 99, 235, 0.2);
     }
 
     #station-title {
-      font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+      font-size: clamp(1.15rem, 2.3vw, 1.55rem);
       font-weight: 700;
       margin: 4px 0;
       white-space: nowrap;
@@ -113,7 +215,7 @@
     }
 
     #station-meta {
-      font-size: clamp(0.72rem, 1.3vw, 0.82rem);
+      font-size: clamp(0.72rem, 1.2vw, 0.82rem);
       color: var(--text-muted);
     }
 
@@ -126,10 +228,10 @@
       background: rgba(59, 130, 246, 0.15);
       padding: 2px 8px;
       border-radius: 999px;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
-    /* SOUND MODE DSP SELECTOR */
+    /* DSP CHANNEL MATRIX SWITCHER */
     .sound-modes-container {
       display: flex;
       flex-direction: column;
@@ -145,7 +247,7 @@
 
     .modes-pills {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 6px;
     }
 
@@ -173,15 +275,13 @@
       box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
     }
 
-    /* BUTTON CONTROLS */
     .control-actions {
       display: flex;
-      flex-wrap: wrap;
       gap: 8px;
     }
 
     .btn {
-      padding: 9px 14px;
+      padding: 10px 12px;
       border-radius: 10px;
       border: none;
       font-weight: 600;
@@ -190,7 +290,7 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       transition: background 0.15s;
     }
 
@@ -204,111 +304,7 @@
     .btn-secondary:hover { background: #3f3f55; }
     .btn-cancel { background: #475569; color: #fff; }
 
-    /* DYNAMIC MULTI-SPEAKER GRID */
-    #speakers-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: clamp(8px, 1.5vw, 14px);
-      width: 100%;
-      align-items: stretch;
-    }
-
-    .speaker-unit {
-      background: radial-gradient(circle, #101015 40%, #08080c 100%);
-      border: 4px solid var(--speaker-rim);
-      border-radius: 18px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 8px;
-      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.95);
-      position: relative;
-      min-height: 170px;
-    }
-
-    .speaker-label {
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      color: #94a3b8;
-      text-transform: uppercase;
-      text-align: center;
-      margin-bottom: 6px;
-    }
-
-    .cone-housing {
-      position: relative;
-      width: clamp(90px, 12vw, 150px);
-      height: clamp(90px, 12vw, 150px);
-      border-radius: 50%;
-      background: radial-gradient(circle, #1e1e28 15%, #050508 85%);
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 12px rgba(0, 0, 0, 0.9);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 3px solid #333342;
-      margin: 4px 0;
-    }
-
-    .speaker-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-    }
-
-    .dust-cap {
-      width: 32%;
-      height: 32%;
-      border-radius: 50%;
-      background: radial-gradient(circle, #3b82f6 0%, #172554 80%);
-      box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
-      z-index: 2;
-      transition: transform 0.05s ease-out;
-    }
-
-    .dust-cap.sub {
-      background: radial-gradient(circle, #ef4444 0%, #7f1d1d 80%);
-      box-shadow: 0 0 14px rgba(239, 68, 68, 0.4);
-    }
-
-    .telemetry-card {
-      width: 100%;
-      background: rgba(0, 0, 0, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 5px 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .telemetry-row {
-      display: flex;
-      justify-content: space-between;
-      font-family: monospace;
-      font-size: 0.65rem;
-      color: #cbd5e1;
-    }
-
-    .db-meter-track {
-      width: 100%;
-      height: 5px;
-      background: #1e293b;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-
-    .db-meter-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #10b981 0%, #f59e0b 70%, #ef4444 100%);
-      transition: width 0.08s ease-out;
-    }
-
-    /* TIMETABLE DRAWER & TV NAV CONTROLS */
+    /* TIMETABLE DRAWER WITH TV SCROLL BUTTONS */
     #remote-drawer {
       position: fixed;
       top: 0;
@@ -320,7 +316,7 @@
       background: #111827;
       border-left: 1px solid var(--border);
       box-shadow: -10px 0 30px rgba(0,0,0,0.8);
-      z-index: 90;
+      z-index: 100;
       display: flex;
       flex-direction: column;
       transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -335,6 +331,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 8px;
+      background: #151d2f;
     }
 
     .tv-scroll-controls {
@@ -347,35 +344,34 @@
       background: #1f2937;
       color: #f3f4f6;
       border: 1px solid var(--border);
-      padding: 6px 12px;
+      padding: 8px 12px;
       border-radius: 8px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
     }
 
-    .tv-scroll-btn:focus, .tv-scroll-btn:focus-visible {
-      outline: 3px solid var(--focus-ring);
+    .tv-scroll-btn:focus, .tv-scroll-btn:focus-visible, .tv-scroll-btn:hover {
+      outline: 2px solid var(--focus-ring);
       background: #374151;
     }
 
     .remote-content {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       padding: 14px 18px;
       display: flex;
       flex-direction: column;
       scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
     }
 
     .station-list {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      flex: 1;
-      overflow-y: auto;
-      scroll-behavior: smooth;
-      padding-right: 4px;
+      width: 100%;
     }
 
     .station-item {
@@ -457,28 +453,6 @@
       z-index: 150;
       padding: 16px;
     }
-
-    /* MEDIA QUERIES FOR TV / DESKTOP / TABLET / MOBILE */
-    @media (min-width: 1024px) {
-      #radio-chassis {
-        display: grid;
-        grid-template-columns: minmax(300px, 1fr) 2fr;
-        align-items: center;
-      }
-      #center-console {
-        order: -1;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .modes-pills {
-        grid-template-columns: repeat(3, 1fr);
-      }
-      .cone-housing {
-        width: 84px;
-        height: 84px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -486,6 +460,26 @@
   <div id="stage">
     <div id="radio-chassis">
       
+      <!-- LEFT PHYSICAL SPEAKER -->
+      <div class="speaker-unit" id="speaker-left">
+        <span class="speaker-label">◀ LEFT CHANNEL</span>
+        
+        <div class="cone-housing">
+          <canvas class="speaker-canvas" id="canvas-left"></canvas>
+          <div class="dust-cap" id="cap-left"></div>
+        </div>
+
+        <div class="telemetry-card">
+          <div class="telemetry-row">
+            <span>LEVEL:</span>
+            <span id="left-db-txt">-∞ dB</span>
+          </div>
+          <div class="db-meter-track">
+            <div class="db-meter-fill" id="left-db-fill"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- CENTER TUNER & DSP CONSOLE -->
       <div id="center-console">
         <div class="tuner-glass">
@@ -494,12 +488,12 @@
           <p id="station-meta">Synchronizing schedule...</p>
         </div>
 
-        <!-- CHANNEL / SOUND MODES SWITCHER -->
+        <!-- CHANNEL MODES MATRIX -->
         <div class="sound-modes-container">
-          <span class="modes-label">Audio Channels & DSP Visualizer</span>
+          <span class="modes-label">Audio Channels & Matrix DSP</span>
           <div class="modes-pills">
-            <button class="mode-btn active" onclick="setSoundMode('2.0')">2.0 Stereo</button>
-            <button class="mode-btn" onclick="setSoundMode('2.1')">2.1 Bass+</button>
+            <button class="mode-btn active" onclick="setSoundMode('2.0')">2.0 Direct</button>
+            <button class="mode-btn" onclick="setSoundMode('2.1')">2.1 Sub+</button>
             <button class="mode-btn" onclick="setSoundMode('3.0')">3.0 Center</button>
             <button class="mode-btn" onclick="setSoundMode('4.0')">4.0 Quad</button>
             <button class="mode-btn" onclick="setSoundMode('5.1')">5.1 Surround</button>
@@ -514,8 +508,25 @@
         </div>
       </div>
 
-      <!-- DYNAMIC SPEAKER VISUALIZERS -->
-      <div id="speakers-container"></div>
+      <!-- RIGHT PHYSICAL SPEAKER -->
+      <div class="speaker-unit" id="speaker-right">
+        <span class="speaker-label">RIGHT CHANNEL ▶</span>
+        
+        <div class="cone-housing">
+          <canvas class="speaker-canvas" id="canvas-right"></canvas>
+          <div class="dust-cap" id="cap-right"></div>
+        </div>
+
+        <div class="telemetry-card">
+          <div class="telemetry-row">
+            <span>LEVEL:</span>
+            <span id="right-db-txt">-∞ dB</span>
+          </div>
+          <div class="db-meter-track">
+            <div class="db-meter-fill" id="right-db-fill"></div>
+          </div>
+        </div>
+      </div>
 
     </div>
   </div>
@@ -572,14 +583,14 @@
     </div>
   </div>
 
-  <!-- TIMETABLE DRAWER WITH TV SCROLL CONTROLS -->
+  <!-- TIMETABLE DRAWER WITH WORKING TV SCROLL CONTROLS -->
   <div id="remote-drawer">
     <div class="remote-header">
       <h3 style="font-size: 1rem;">Station Timetable</h3>
       <div class="tv-scroll-controls">
-        <button class="tv-scroll-btn" onclick="scrollTimetable(-160)" title="Scroll Up">▲ Up</button>
-        <button class="tv-scroll-btn" onclick="scrollTimetable(160)" title="Scroll Down">▼ Down</button>
-        <button class="btn btn-secondary" onclick="toggleRemote()">✕</button>
+        <button type="button" class="tv-scroll-btn" onclick="scrollTimetable(-220)" title="Scroll Up">▲ Up</button>
+        <button type="button" class="tv-scroll-btn" onclick="scrollTimetable(220)" title="Scroll Down">▼ Down</button>
+        <button type="button" class="btn btn-secondary" onclick="toggleRemote()">✕</button>
       </div>
     </div>
     <div class="remote-content" id="timetable-scroll-area">
@@ -587,7 +598,8 @@
     </div>
   </div>
 
-  <audio id="radio-core" crossorigin="anonymous" preload="auto"></audio>
+  <!-- Explicit crossOrigin for WebKit & iPad Mini compatibility -->
+  <audio id="radio-core" crossorigin="anonymous" preload="auto" playsinline></audio>
 
   <div id="start-overlay">
     <button class="btn btn-primary" style="padding: 16px 32px; font-size: 1.05rem;" id="init-btn">
@@ -661,56 +673,18 @@
       { startTime: "02:30", endTime: "05:00", title: "Telugu Christian Fellowship Radio", category: "Entertainment", language: "Telugu", url: "https://stream.zeno.fm/4wvqq77y2reuv" }
     ];
 
-    // Channel setup layout per mode
-    const CHANNEL_CONFIGS = {
-      "2.0": [
-        { id: "L", label: "Left Channel", color: "#38bdf8", isSub: false, pan: -0.8 },
-        { id: "R", label: "Right Channel", color: "#818cf8", isSub: false, pan: 0.8 }
-      ],
-      "2.1": [
-        { id: "L", label: "Left Channel", color: "#38bdf8", isSub: false, pan: -0.8 },
-        { id: "LFE", label: "Subwoofer (.1)", color: "#ef4444", isSub: true, pan: 0 },
-        { id: "R", label: "Right Channel", color: "#818cf8", isSub: false, pan: 0.8 }
-      ],
-      "3.0": [
-        { id: "L", label: "Front Left", color: "#38bdf8", isSub: false, pan: -0.9 },
-        { id: "C", label: "Center Voice", color: "#34d399", isSub: false, pan: 0 },
-        { id: "R", label: "Front Right", color: "#818cf8", isSub: false, pan: 0.9 }
-      ],
-      "4.0": [
-        { id: "FL", label: "Front Left", color: "#38bdf8", isSub: false, pan: -0.9 },
-        { id: "FR", label: "Front Right", color: "#818cf8", isSub: false, pan: 0.9 },
-        { id: "RL", label: "Rear Left", color: "#06b6d4", isSub: false, pan: -0.6 },
-        { id: "RR", label: "Rear Right", color: "#a855f7", isSub: false, pan: 0.6 }
-      ],
-      "5.1": [
-        { id: "FL", label: "Front Left", color: "#38bdf8", isSub: false, pan: -0.9 },
-        { id: "C", label: "Center", color: "#34d399", isSub: false, pan: 0 },
-        { id: "FR", label: "Front Right", color: "#818cf8", isSub: false, pan: 0.9 },
-        { id: "SL", label: "Surround L", color: "#06b6d4", isSub: false, pan: -0.6 },
-        { id: "LFE", label: "Subwoofer (.1)", color: "#ef4444", isSub: true, pan: 0 },
-        { id: "SR", label: "Surround R", color: "#a855f7", isSub: false, pan: 0.6 }
-      ],
-      "7.1": [
-        { id: "FL", label: "Front Left", color: "#38bdf8", isSub: false, pan: -0.9 },
-        { id: "C", label: "Center", color: "#34d399", isSub: false, pan: 0 },
-        { id: "FR", label: "Front Right", color: "#818cf8", isSub: false, pan: 0.9 },
-        { id: "SL", label: "Side Left", color: "#06b6d4", isSub: false, pan: -0.6 },
-        { id: "SR", label: "Side Right", color: "#a855f7", isSub: false, pan: 0.6 },
-        { id: "BL", label: "Back Left", color: "#3b82f6", isSub: false, pan: -0.3 },
-        { id: "LFE", label: "Subwoofer (.1)", color: "#ef4444", isSub: true, pan: 0 },
-        { id: "BR", label: "Back Right", color: "#ec4899", isSub: false, pan: 0.3 }
-      ]
-    };
-
     let schedule = [];
     let activeChannel = null;
     let manualOverride = false;
     let hlsInstance = null;
 
-    let audioCtx, audioSource;
-    let activeSpeakers = [];
-    let currentSoundMode = "2.0";
+    // Web Audio Multi-Channel Matrix Downmixer Routing Graph
+    let audioCtx = null;
+    let audioSource = null;
+    let splitterNode, mergerNode;
+    let gainL, gainR, gainC, gainSub, gainSurroundL, gainSurroundR;
+    let subFilter, centerFilter, surroundFilter;
+    let analyserL, analyserR, dataL, dataR;
 
     const audio = document.getElementById("radio-core");
     const stationTitleEl = document.getElementById("station-title");
@@ -719,8 +693,7 @@
     const remoteDrawer = document.getElementById("remote-drawer");
     const remoteList = document.getElementById("remote-station-list");
     const popupOverlay = document.getElementById("edit-popup-overlay");
-    const speakersContainer = document.getElementById("speakers-container");
-    const timetableScrollArea = document.getElementById("timetable-scroll-area");
+    const scrollContainer = document.getElementById("timetable-scroll-area");
 
     function initializeScheduleData() {
       const cached = localStorage.getItem(STORAGE_KEY);
@@ -729,7 +702,7 @@
           schedule = JSON.parse(cached);
           if (schedule.length > 0) return;
         } catch (e) {
-          console.warn("Storage parse error, resetting fallback:", e);
+          console.warn("Storage parse error:", e);
         }
       }
       schedule = [...DEFAULT_SCHEDULE];
@@ -741,175 +714,263 @@
       renderRemoteList();
     }
 
-    // Scroll helpers for Smart TV remotes / browsers
+    // Scroll up/down buttons targeting the timetable area
     function scrollTimetable(offset) {
-      if (timetableScrollArea) {
-        timetableScrollArea.scrollBy({ top: offset, behavior: "smooth" });
+      if (scrollContainer) {
+        scrollContainer.scrollBy({ top: offset, behavior: "smooth" });
       }
     }
 
-    function buildSpeakers(modeKey) {
-      const configs = CHANNEL_CONFIGS[modeKey] || CHANNEL_CONFIGS["2.0"];
-      speakersContainer.innerHTML = "";
-      activeSpeakers = [];
-
-      configs.forEach((cfg) => {
-        const unit = document.createElement("div");
-        unit.className = "speaker-unit";
-        unit.innerHTML = `
-          <span class="speaker-label">${cfg.label}</span>
-          <div class="cone-housing">
-            <canvas class="speaker-canvas" id="canvas-${cfg.id}"></canvas>
-            <div class="dust-cap ${cfg.isSub ? "sub" : ""}" id="cap-${cfg.id}"></div>
-          </div>
-          <div class="telemetry-card">
-            <div class="telemetry-row">
-              <span>LEVEL:</span>
-              <span id="txt-db-${cfg.id}">-∞ dB</span>
-            </div>
-            <div class="db-meter-track">
-              <div class="db-meter-fill" id="fill-db-${cfg.id}"></div>
-            </div>
-            <div class="telemetry-row" style="margin-top: 2px;">
-              <span>FREQ:</span>
-              <span id="txt-freq-${cfg.id}">0 Hz</span>
-            </div>
-          </div>
-        `;
-        speakersContainer.appendChild(unit);
-
-        let analyser = null;
-        let dataArray = null;
-
-        if (audioCtx && audioSource) {
-          analyser = audioCtx.createAnalyser();
-          analyser.fftSize = 128;
-          dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-          if (cfg.isSub) {
-            const subFilter = audioCtx.createBiquadFilter();
-            subFilter.type = "lowpass";
-            subFilter.frequency.value = 140;
-            audioSource.connect(subFilter);
-            subFilter.connect(analyser);
-          } else {
-            const panner = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
-            if (panner) {
-              panner.pan.value = cfg.pan;
-              audioSource.connect(panner);
-              panner.connect(analyser);
-            } else {
-              audioSource.connect(analyser);
-            }
-          }
-        }
-
-        activeSpeakers.push({
-          id: cfg.id,
-          color: cfg.color,
-          canvas: document.getElementById(`canvas-${cfg.id}`),
-          dustCap: document.getElementById(`cap-${cfg.id}`),
-          txtDb: document.getElementById(`txt-db-${cfg.id}`),
-          fillDb: document.getElementById(`fill-db-${cfg.id}`),
-          txtFreq: document.getElementById(`txt-freq-${cfg.id}`),
-          analyser: analyser,
-          dataArray: dataArray
-        });
-      });
-
-      resizeSpeakerCanvases();
-    }
-
-    function resizeSpeakerCanvases() {
-      activeSpeakers.forEach(s => {
-        if (s.canvas && s.canvas.parentElement) {
-          s.canvas.width = s.canvas.parentElement.clientWidth;
-          s.canvas.height = s.canvas.parentElement.clientHeight;
-        }
-      });
-    }
-
-    window.addEventListener("resize", resizeSpeakerCanvases);
-
+    // WEB AUDIO MULTI-CHANNEL DOWNMIX MATRIX INTO TWO SPEAKERS
     function initStereoAudioEngine() {
+      if (audioCtx) return;
+
       try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContext();
+        const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioCtxClass();
+
         audioSource = audioCtx.createMediaElementSource(audio);
-        audioSource.connect(audioCtx.destination);
-      } catch (e) {
-        console.warn("Audio Context init fallback:", e);
+
+        splitterNode = audioCtx.createChannelSplitter(2);
+        mergerNode = audioCtx.createChannelMerger(2);
+
+        // Discrete Multi-Channel Matrix Gains
+        gainL = audioCtx.createGain();
+        gainR = audioCtx.createGain();
+        gainC = audioCtx.createGain();
+        gainSub = audioCtx.createGain();
+        gainSurroundL = audioCtx.createGain();
+        gainSurroundR = audioCtx.createGain();
+
+        // Subwoofer Processing Channel (LFE 120Hz Lowpass)
+        subFilter = audioCtx.createBiquadFilter();
+        subFilter.type = "lowpass";
+        subFilter.frequency.value = 120;
+        subFilter.Q.value = 1.0;
+
+        // Center Vocal Channel Processing
+        centerFilter = audioCtx.createBiquadFilter();
+        centerFilter.type = "peaking";
+        centerFilter.frequency.value = 1200;
+        centerFilter.gain.value = 2.0;
+
+        // Surround Ambiance Processing
+        surroundFilter = audioCtx.createBiquadFilter();
+        surroundFilter.type = "highpass";
+        surroundFilter.frequency.value = 350;
+
+        // Analysers for the 2 Physical Speakers
+        analyserL = audioCtx.createAnalyser();
+        analyserL.fftSize = 128;
+        analyserR = audioCtx.createAnalyser();
+        analyserR.fftSize = 128;
+
+        dataL = new Uint8Array(analyserL.frequencyBinCount);
+        dataR = new Uint8Array(analyserR.frequencyBinCount);
+
+        // Matrix Distribution Connections
+        audioSource.connect(splitterNode);
+
+        // Mains
+        splitterNode.connect(gainL, 0);
+        splitterNode.connect(gainR, 1);
+
+        // Center Channel
+        splitterNode.connect(centerFilter, 0);
+        splitterNode.connect(centerFilter, 1);
+        centerFilter.connect(gainC);
+
+        // Subwoofer Channel
+        splitterNode.connect(subFilter, 0);
+        splitterNode.connect(subFilter, 1);
+        subFilter.connect(gainSub);
+
+        // Surround Ambiance
+        splitterNode.connect(surroundFilter, 0);
+        splitterNode.connect(surroundFilter, 1);
+        surroundFilter.connect(gainSurroundL);
+        surroundFilter.connect(gainSurroundR);
+
+        // Downmixing matrix into Physical Left Speaker (ch 0)
+        gainL.connect(mergerNode, 0, 0);
+        gainC.connect(mergerNode, 0, 0);
+        gainSub.connect(mergerNode, 0, 0);
+        gainSurroundL.connect(mergerNode, 0, 0);
+
+        // Downmixing matrix into Physical Right Speaker (ch 1)
+        gainR.connect(mergerNode, 0, 1);
+        gainC.connect(mergerNode, 0, 1);
+        gainSub.connect(mergerNode, 0, 1);
+        gainSurroundR.connect(mergerNode, 0, 1);
+
+        // Connect output to physical destination and visualizers
+        mergerNode.connect(analyserL, 0);
+        mergerNode.connect(analyserR, 1);
+        mergerNode.connect(audioCtx.destination);
+
+        applyChannelDistribution("2.0");
+        startStereoVisualizerLoop();
+      } catch (err) {
+        console.warn("Audio Context init fallback:", err);
       }
-      buildSpeakers(currentSoundMode);
-      startVisualizerLoop();
+    }
+
+    // MULTI-CHANNEL DISTRIBUTION RULES (Downmixed into 2 Speakers)
+    function applyChannelDistribution(mode) {
+      if (!audioCtx || !gainL) return;
+      const t = audioCtx.currentTime;
+
+      switch (mode) {
+        case "2.0": // Direct Stereo
+          gainL.gain.setTargetAtTime(1.0, t, 0.04);
+          gainR.gain.setTargetAtTime(1.0, t, 0.04);
+          gainC.gain.setTargetAtTime(0.0, t, 0.04);
+          gainSub.gain.setTargetAtTime(0.0, t, 0.04);
+          gainSurroundL.gain.setTargetAtTime(0.0, t, 0.04);
+          gainSurroundR.gain.setTargetAtTime(0.0, t, 0.04);
+          break;
+
+        case "2.1": // Subwoofer Bass+
+          gainL.gain.setTargetAtTime(0.85, t, 0.04);
+          gainR.gain.setTargetAtTime(0.85, t, 0.04);
+          gainC.gain.setTargetAtTime(0.0, t, 0.04);
+          gainSub.gain.setTargetAtTime(1.4, t, 0.04);
+          gainSurroundL.gain.setTargetAtTime(0.0, t, 0.04);
+          gainSurroundR.gain.setTargetAtTime(0.0, t, 0.04);
+          break;
+
+        case "3.0": // Dialog Center Clarity
+          gainL.gain.setTargetAtTime(0.7, t, 0.04);
+          gainR.gain.setTargetAtTime(0.7, t, 0.04);
+          gainC.gain.setTargetAtTime(0.9, t, 0.04);
+          gainSub.gain.setTargetAtTime(0.0, t, 0.04);
+          gainSurroundL.gain.setTargetAtTime(0.0, t, 0.04);
+          gainSurroundR.gain.setTargetAtTime(0.0, t, 0.04);
+          break;
+
+        case "4.0": // Quad Ambiance
+          gainL.gain.setTargetAtTime(0.75, t, 0.04);
+          gainR.gain.setTargetAtTime(0.75, t, 0.04);
+          gainC.gain.setTargetAtTime(0.0, t, 0.04);
+          gainSub.gain.setTargetAtTime(0.0, t, 0.04);
+          gainSurroundL.gain.setTargetAtTime(0.7, t, 0.04);
+          gainSurroundR.gain.setTargetAtTime(0.7, t, 0.04);
+          break;
+
+        case "5.1": // 5.1 Surround Matrix
+          gainL.gain.setTargetAtTime(0.65, t, 0.04);
+          gainR.gain.setTargetAtTime(0.65, t, 0.04);
+          gainC.gain.setTargetAtTime(0.7, t, 0.04);
+          gainSub.gain.setTargetAtTime(1.2, t, 0.04);
+          gainSurroundL.gain.setTargetAtTime(0.6, t, 0.04);
+          gainSurroundR.gain.setTargetAtTime(0.6, t, 0.04);
+          break;
+
+        case "7.1": // 7.1 Cinema Matrix
+          gainL.gain.setTargetAtTime(0.58, t, 0.04);
+          gainR.gain.setTargetAtTime(0.58, t, 0.04);
+          gainC.gain.setTargetAtTime(0.75, t, 0.04);
+          gainSub.gain.setTargetAtTime(1.3, t, 0.04);
+          gainSurroundL.gain.setTargetAtTime(0.75, t, 0.04);
+          gainSurroundR.gain.setTargetAtTime(0.75, t, 0.04);
+          break;
+      }
     }
 
     function setSoundMode(mode) {
-      currentSoundMode = mode;
       document.querySelectorAll(".mode-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.innerText.includes(mode));
+        btn.classList.toggle("active", btn.innerText.toLowerCase().includes(mode.toLowerCase()));
       });
-      buildSpeakers(mode);
+      applyChannelDistribution(mode);
     }
 
-    function startVisualizerLoop() {
+    // IPAD MINI & HIGH-DPI TWO-SPEAKER VISUALIZER
+    function startStereoVisualizerLoop() {
+      const cvsL = document.getElementById("canvas-left");
+      const cvsR = document.getElementById("canvas-right");
+      const capL = document.getElementById("cap-left");
+      const capR = document.getElementById("cap-right");
+
+      const txtDbL = document.getElementById("left-db-txt");
+      const txtDbR = document.getElementById("right-db-txt");
+      const fillDbL = document.getElementById("left-db-fill");
+      const fillDbR = document.getElementById("right-db-fill");
+
+      function fitCanvas() {
+        if (!cvsL || !cvsR) return;
+        const rectL = cvsL.parentElement.getBoundingClientRect();
+        const rectR = cvsR.parentElement.getBoundingClientRect();
+
+        const wL = Math.max(80, Math.floor(rectL.width || cvsL.parentElement.clientWidth));
+        const hL = Math.max(80, Math.floor(rectL.height || cvsL.parentElement.clientHeight));
+        const wR = Math.max(80, Math.floor(rectR.width || cvsR.parentElement.clientWidth));
+        const hR = Math.max(80, Math.floor(rectR.height || cvsR.parentElement.clientHeight));
+
+        cvsL.width = wL;
+        cvsL.height = hL;
+        cvsR.width = wR;
+        cvsR.height = hR;
+      }
+
+      fitCanvas();
+      window.addEventListener("resize", fitCanvas);
+      window.addEventListener("orientationchange", () => setTimeout(fitCanvas, 200));
+
+      function drawSpeaker(canvas, analyser, data, capEl, txtDb, fillDb, color) {
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (!analyser || !data) return;
+        analyser.getByteFrequencyData(data);
+
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          sum += data[i] * data[i];
+        }
+
+        const rms = Math.sqrt(sum / data.length);
+        const db = rms > 0 ? Math.max(-60, Math.round(20 * Math.log10(rms / 255))) : -60;
+
+        // Decibel meters without any frequency displays
+        if (txtDb) txtDb.innerText = db > -60 ? `${db} dB` : "-∞ dB";
+        if (fillDb) fillDb.style.width = `${Math.min(100, Math.max(0, (db + 60) * 1.66))}%`;
+
+        // Cone physical pulse
+        if (capEl) {
+          const scale = 1 + (rms / 255) * 0.22;
+          capEl.style.transform = `scale(${scale})`;
+        }
+
+        // Circular waveform
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const radius = (canvas.width / 2) * 0.72;
+        const bars = data.length;
+
+        for (let i = 0; i < bars; i++) {
+          const val = data[i];
+          const rad = (Math.PI * 2 / bars) * i;
+          const barLen = (val / 255) * (radius * 0.44);
+
+          const x1 = cx + Math.cos(rad) * radius;
+          const y1 = cy + Math.sin(rad) * radius;
+          const x2 = cx + Math.cos(rad) * (radius + barLen);
+          const y2 = cy + Math.sin(rad) * (radius + barLen);
+
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2.4;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      }
+
       function loop() {
         requestAnimationFrame(loop);
-
-        activeSpeakers.forEach(s => {
-          if (!s.canvas) return;
-          const ctx = s.canvas.getContext("2d");
-          ctx.clearRect(0, 0, s.canvas.width, s.canvas.height);
-
-          if (!s.analyser || !s.dataArray) return;
-          s.analyser.getByteFrequencyData(s.dataArray);
-
-          let sum = 0;
-          let maxVal = 0;
-          let maxIdx = 0;
-
-          for (let i = 0; i < s.dataArray.length; i++) {
-            const val = s.dataArray[i];
-            sum += val * val;
-            if (val > maxVal) { maxVal = val; maxIdx = i; }
-          }
-
-          const rms = Math.sqrt(sum / s.dataArray.length);
-          const db = rms > 0 ? Math.max(-60, Math.round(20 * Math.log10(rms / 255))) : -60;
-          const dominantFreq = Math.round((maxIdx * (audioCtx.sampleRate / 2)) / s.analyser.frequencyBinCount);
-
-          if (s.txtDb) s.txtDb.innerText = db > -60 ? `${db} dB` : "-∞ dB";
-          if (s.fillDb) s.fillDb.style.width = `${Math.min(100, Math.max(0, (db + 60) * 1.66))}%`;
-          if (s.txtFreq) s.txtFreq.innerText = maxVal > 15 ? `${dominantFreq} Hz` : "0 Hz";
-
-          if (s.dustCap) {
-            const scale = 1 + (rms / 255) * 0.22;
-            s.dustCap.style.transform = `scale(${scale})`;
-          }
-
-          const cx = s.canvas.width / 2;
-          const cy = s.canvas.height / 2;
-          const radius = (s.canvas.width / 2) * 0.72;
-          const bars = s.dataArray.length;
-
-          for (let i = 0; i < bars; i++) {
-            const val = s.dataArray[i];
-            const rad = (Math.PI * 2 / bars) * i;
-            const barLen = (val / 255) * (radius * 0.42);
-
-            const x1 = cx + Math.cos(rad) * radius;
-            const y1 = cy + Math.sin(rad) * radius;
-            const x2 = cx + Math.cos(rad) * (radius + barLen);
-            const y2 = cy + Math.sin(rad) * (radius + barLen);
-
-            ctx.strokeStyle = s.color;
-            ctx.lineWidth = 2.2;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-          }
-        });
+        drawSpeaker(cvsL, analyserL, dataL, capL, txtDbL, fillDbL, "#38bdf8");
+        drawSpeaker(cvsR, analyserR, dataR, capR, txtDbR, fillDbR, "#818cf8");
       }
       loop();
     }
@@ -953,10 +1014,14 @@
         hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
         hlsInstance.loadSource(station.url);
         hlsInstance.attachMedia(audio);
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => audio.play().catch(() => {}));
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+          if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+          audio.play().catch(() => {});
+        });
       } else {
         audio.src = station.url;
-        audio.play().catch(e => console.warn("Playback failed:", e));
+        if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+        audio.play().catch(e => console.warn("Playback error:", e));
       }
 
       renderRemoteList();
