@@ -61,7 +61,8 @@
 
     #visualizer-canvas {
       position: absolute;
-      inset: 0;
+      bottom: 20%;
+      
       width: 100%;
       height: 100%;
       display: block;
@@ -71,7 +72,7 @@
     /* FLOATING CENTRAL CONTROL POD */
     #center-overlay {
       position: absolute;
-      top: 50%;
+      top: 20%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: min(380px, 86vw);
@@ -340,11 +341,10 @@
   </style>
 </head>
 <body>
-
+<canvas id="visualizer-canvas"></canvas>
   <!-- STAGE WITH FULL-SCREEN CANVAS & FLOATING CENTER INTERFACE -->
   <div id="stage">
-    <canvas id="visualizer-canvas"></canvas>
-
+    
     <div id="center-overlay">
       <div class="tuner-glass">
         <span class="badge" id="stream-status">AUTOPILOT SCHEDULER</span>
@@ -593,7 +593,7 @@
       }
     }
 
-    // CIRCULAR / RADIAL FREQUENCY SPECTRUM VISUALIZER
+    // STRAIGHT HORIZONTAL FREQUENCY SPECTRUM VISUALIZER
     function startRadialVisualizerLoop() {
       resizeCanvas();
 
@@ -603,10 +603,6 @@
         const width = window.innerWidth;
         const height = window.innerHeight;
         ctx.clearRect(0, 0, width, height);
-
-        const cx = width / 2;
-        const cy = height / 2;
-        const innerRadius = Math.min(cx, cy) * 0.42;
 
         let rms = 0;
         let binsCount = 64;
@@ -636,34 +632,27 @@
         levelDbTxt.innerText = db > -60 ? `${db} dB` : "-∞ dB";
         levelDbFill.style.width = `${Math.min(100, Math.max(0, (db + 60) * 1.66))}%`;
 
-        // Render Radial 360-degree Equalizer Bars
-        const maxOutwardLength = Math.min(cx, cy) * 0.45;
+        // Render Straight Horizontal Equalizer Bars
+        const barSpacing = 2;
+        const totalSpacing = barSpacing * (binsCount - 1);
+        const barWidth = Math.max(1, (width - totalSpacing) / binsCount);
+        const maxBarHeight = height * 0.35;
 
         for (let i = 0; i < binsCount; i++) {
-          const amplitude = isPlaying ? data[i] / 255 : 0;
-          const angle = ((Math.PI * 2) / binsCount) * i - Math.PI / 2;
-          const barLength = amplitude * maxOutwardLength;
+          const amplitude = isPlaying && data ? data[i] / 255 : 0;
+          const barHeight = Math.max(2, amplitude * maxBarHeight);
+          const x = i * (barWidth + barSpacing);
+          const y = height - barHeight;
 
-          const xStart = cx + Math.cos(angle) * innerRadius;
-          const yStart = cy + Math.sin(angle) * innerRadius;
-          const xEnd = cx + Math.cos(angle) * (innerRadius + barLength);
-          const yEnd = cy + Math.sin(angle) * (innerRadius + barLength);
-
-          const opacity = isPlaying ? Math.max(0.18, amplitude * 0.95) : 0.08;
-
-          ctx.strokeStyle = `rgba(59, 130, 246, ${opacity})`;
-          ctx.lineWidth = Math.max(2, (2 * Math.PI * innerRadius) / (binsCount * 1.8));
-          ctx.lineCap = "round";
-
-          ctx.beginPath();
-          ctx.moveTo(xStart, yStart);
-          ctx.lineTo(xEnd, yEnd);
-          ctx.stroke();
+          const opacity = isPlaying ? Math.max(0.2, amplitude * 0.9) : 0.08;
+          ctx.fillStyle = `rgba(59, 130, 246, ${opacity})`;
+          ctx.fillRect(x, y, barWidth, barHeight);
         }
 
-        // Concentric Decorative Ring
+        // Horizontal Baseline Decorative Line
         ctx.beginPath();
-        ctx.arc(cx, cy, innerRadius, 0, Math.PI * 2);
+        ctx.moveTo(0, height - 1);
+        ctx.lineTo(width, height - 1);
         ctx.strokeStyle = isPlaying ? "rgba(59, 130, 246, 0.4)" : "rgba(255, 255, 255, 0.08)";
         ctx.lineWidth = 1.5;
         ctx.stroke();
