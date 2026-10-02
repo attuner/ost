@@ -1,7 +1,7 @@
 {
   "name": "Online Sound Tracks",
-  "short_name": "Online Sound Tracks",
-  "description": "Online Sound Tracks with adaptive multi-channel speaker visualizers",
+  "short_name": "OST",
+  "description": "Online Sound Tracks with adaptive visualizers",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
